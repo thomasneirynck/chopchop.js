@@ -163,9 +163,9 @@ define(['./Promise'], function (Promise) {
      *    }
      *  };
      *
-     *  //extend the Iterable with the utility funcs. (use IterableMixin.augment(object)).
+     *  //extend the iterable with the utility funcs. (use IterableMixin.augment(object)).
      *  IterableMixin.augment(iterable);
-     *  Iterable
+     *  iterable
      *    .mapAsync(function(){
      *      //transform each element
      *    });
@@ -183,9 +183,8 @@ define(['./Promise'], function (Promise) {
      *          //do something with the mapped collection
      *        });
      *
-     * //all functionality is also present as simple functions
-     * //be aware that this function may have a side-effect: namely that they exhaust the Iterable!
-     * //e.g.
+     *  //all functionality is also present as simple functions
+     *  //be aware that these functions may have side-effects: namely that they exhaust the Iterable!
      *  IterableMixin
      *  .mapAsync(myIterable,someMapFunction)
      *  .then(function(result){
