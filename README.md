@@ -206,7 +206,25 @@ A function which invokes a callback. Only elements from the iterator will be pro
 ##Promise.js##
 
 
-A vanilla PromiseA.
+A vanilla PromiseA, supporting resolve, reject, progress.
+
+It has a convenient .thenable
+
+###.thenable###
+
+define(['path/to/Promise'],function(Promise){
+
+
+    //'promise' has the resolve/reject/progress methods. hold on to this one!
+    var promise = new Promise();
+
+    //'thenable' only has a .then subscription method, but not the resolve/reject/progress methods
+    //Give this one to the users of your API.
+    //it is linked - by quantum entanglement presumably - to the promise which generated it.
+    var thenable = promise.thenable();
+
+
+});
 
 
 
