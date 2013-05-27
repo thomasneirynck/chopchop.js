@@ -157,14 +157,14 @@ define(['./Promise'], function (Promise) {
    * ], function(IterableMixin){
      *
      *  //an Iterable must implement next.
-     *  var Iterable = {
+     *  var iterable = {
      *    next: function(){
      *      ... return the next element of the iteration or throw an error when the end has been reached ...
      *    }
      *  };
      *
      *  //extend the Iterable with the utility funcs. (use IterableMixin.augment(object)).
-     *  IterableMixin.augment(Iterable);
+     *  IterableMixin.augment(iterable);
      *  Iterable
      *    .mapAsync(function(){
      *      //transform each element
@@ -183,11 +183,14 @@ define(['./Promise'], function (Promise) {
      *          //do something with the mapped collection
      *        });
      *
-     * //all funcionality is also present as simple functions
-     * //!!be aware that this funcion has a side-effect: namely it will exhaust the Iterable!
+     * //all functionality is also present as simple functions
+     * //be aware that this function may have a side-effect: namely that they exhaust the Iterable!
      * //e.g.
      *  IterableMixin
-     *  .mapAsync(myIterable,someMapFunction);
+     *  .mapAsync(myIterable,someMapFunction)
+     *  .then(function(result){
+     *    //do something with the result.
+     *  });
      *
      *
      *
@@ -249,7 +252,7 @@ define(['./Promise'], function (Promise) {
     reduceAsync: function (fold, value, options) {
 
       if (value === undefined) {
-        throw new Error('Cannot reduce empty Iterable with no initial value');
+        throw new Error('Cannot reduce empty Iterable with no initial value (2nd argument)');
       }
 
       return _forEachAsync
@@ -263,6 +266,11 @@ define(['./Promise'], function (Promise) {
     }
   };
 
+  /**
+   * mixin the Iterable functionality in the destination.
+   * @param destination the object in which to mixin the functions.
+   * @return {*}
+   */
   IterableMixin.augment = function (destination) {
     var key;
     for (key in IterableMixin.prototype) {
@@ -272,6 +280,8 @@ define(['./Promise'], function (Promise) {
     }
     return destination;
   };
+
+  //other commonly used names for mixin.
   IterableMixin.extend = IterableMixin.mixin = IterableMixin.augment;
 
   //for convenience, also provide the functionality as properties on the constructor function.
@@ -286,7 +296,7 @@ define(['./Promise'], function (Promise) {
     }
   }
 
-  //prevent tampering with module.
+  //prevent tampering with this module.
   if (Object.freeze) {
     Object.freeze(IterableMixin.prototype);
     Object.freeze(IterableMixin);
