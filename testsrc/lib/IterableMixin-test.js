@@ -5,8 +5,8 @@ define([
   module("IterableMixin");
 
   var array = [];
-  var elements = 16;
-  var counter = elements;
+  var elementCount = 16;
+  var counter = elementCount;
   while (counter--) array.unshift(counter);
 
   function TestIterable() {
@@ -61,7 +61,7 @@ define([
 
 
     promise.then(function () {
-      equal(counter, elements, "must be called same times");
+      equal(counter, elementCount, "must be called same times");
       equal(ticks, 1, 'must only be called once');
       start();
     });
@@ -90,7 +90,7 @@ define([
 
     promise
       .then(function () {
-        equal(counter, elements + 1, "must be called same times");
+        equal(counter, elementCount + 1, "must be called same times");
         start();
       });
 
@@ -105,9 +105,25 @@ define([
     var promise = it.mapAsync(function (e) {
       return e + 1000;
     }).then(function (e) {
-        equal(e.length, elements, "should get array with equal number of elem");
+        equal(e.length, elementCount, "should get array with equal number of elem");
         e.forEach(function (val, i) {
           equal(val - 1000, it._a[i]);
+        });
+        start();
+      });
+    ok(typeof promise.then === 'function', "must get thennable");
+  });
+
+  asyncTest("mapAsync - array", function () {
+
+    var ar = [1,2,3,4,5];
+
+    var promise = IterableMixin.mapAsync(ar,function (e) {
+      return e + 1000;
+    }).then(function (e) {
+        equal(e.length, ar.length, "should get array with equal number of elem");
+        e.forEach(function (val, i) {
+          equal(val - 1000, ar[i]);
         });
         start();
       });
@@ -121,7 +137,7 @@ define([
     var promise = it.filterAsync(function (e) {
       return (e % 2 === 0);
     }).then(function (e) {
-        equal(e.length, Math.floor(elements / 2), "should get array with half number of elem");
+        equal(e.length, Math.floor(elementCount / 2), "should get array with half number of elem");
         e.forEach(function (val) {
           ok(val % 2 === 0);
         });
@@ -180,7 +196,7 @@ define([
         maxN: 1
       })
       .then(function () {
-        equal(a - 1, elements, 'should have used ticker');
+        equal(a - 1, elementCount, 'should have used ticker');
         start();
       });
 

@@ -1,14 +1,15 @@
 #chopchop.js#
 
-A small javascript utility library for (quickly) processing of asynchronous collections.
+A small javascript utility library making asynchronous processing of collections more easy.
 
-Currently only contains two modules:
+Contains two modules:
 
-1. Promise: lightweight PromiseA implementationand
-2. IterableMixin: a mixin with asynchronous array comprehension methods for iterables. It works with arrays or iterators.
+1. IterableMixin: a mixin with asynchronous array comprehension methods for iterables. It works with arrays or iterators.
+2. Promise: lightweight PromiseA implementationand
 
 
-##IterableMixin##
+
+##1. IterableMixin##
 A mixin for iterators, specifically designed for asynchronous collection comprehension. Supports basic  map, filter, reduce and groupBy functionality.
 
 It works with arrays (the native JS Array) and iterators (any object which implements .next()).
@@ -203,14 +204,17 @@ A function which invokes a callback. Only elements from the iterator will be pro
         };
 
 
-##Promise.js##
+##2. Promise.js##
 
 
 A vanilla PromiseA, supporting resolve, reject, progress.
 
-It has a convenient .thenable
+It does provide following sugar:
 
 ###.thenable###
+
+It generates a thenable, which only provides a .then method. The resolve/reject/progress
+instance methods are not accessible from this object.
 
 define(['path/to/Promise'],function(Promise){
 
