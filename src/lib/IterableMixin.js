@@ -201,7 +201,7 @@ define(['./Promise'], function (Promise) {
 
   IterableMixin.prototype = {
 
-    groupAsync: function (generateKey, options) {
+    groupByAsync: function (generateKey, options) {
       var group = {};
 
       return _forEachAsync
