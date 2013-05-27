@@ -79,7 +79,7 @@ A thenable has a then-method, which takes 3 parameters, all of them functions:
 3. a progress handle.
 
 
-####mapAsync####
+####.mapAsync(mapFunction,options)####
 
 Takes a single map function as parameter.
 
@@ -101,7 +101,7 @@ Returns a promise for a new collection, which contains all mapped items.
             //applied to an element of the iterator.
         });
 
-####reduceAsync####
+####.reduceAsync(foldFunction,initialValue,options)####
 
 Reduce all elements from an iterator to a single value. This takes two parameters:
 
@@ -118,7 +118,7 @@ Reduce all elements from an iterator to a single value. This takes two parameter
                 console.log("total: " + total);
         });
 
-####filterAsync####
+####.filterAsync(predicateFunction,options)####
 
 Takes a single predicate function and returns a new array which only contains the elements which passes the filter function.
 
@@ -133,7 +133,7 @@ Takes a single predicate function and returns a new array which only contains th
             });
 
 
-####groupByAsync####
+####.groupByAsync(hashFunction,options)####
 
 Takes a single hash-fuctions, and groups all elements in a map where the key is the hash, and the value is an array with
 the objects that correspond to this hash.
@@ -157,7 +157,7 @@ the objects that correspond to this hash.
                 });
 
 
-###Controlling the duration of the iteration###
+###The options object: controlling the duration of the iteration###
 
 All methods (mapAsync, reduceAsync, filterAsync, groupByAsync) can take an optional options object as a last parameter.
 
@@ -167,7 +167,7 @@ This object has 3 optional properties:
 2. maxN: an integer specifying how many items may maximally be processed in a single time-step.
 3. requestTick: a function taking a single parameter which is a callback function. This function invokes the callback when a next iteration of the can be performed.
 
-####maxIterationTime###
+####.maxIterationTime###
 
 Specify the maximum duration - in milliseconds - of a single tick. The duraction is approximate, and actual computation in a single callstack
 might exceed this value.
@@ -178,7 +178,7 @@ might exceed this value.
         maxIterationTime: 20
     };
 
-####maxN####
+####.maxN####
 
 Process no more than n elements in a single tick.
 
@@ -189,31 +189,27 @@ Process no more than n elements in a single tick.
         };
 
 
-####requestTick####
+####.requestTick####
 
 A function which invokes a callback. Only elements from the iterator will be processed when the callback function has been called.
 
-    function onAnimationFrame(callback){
-        mozRequestAnimationFrame(callback);//only for Mozilla browsers
-    }
-
+    //on FF, this will cause you processing to happen on the natural frame-rate of the browser.
     iterator.forEachAsync(function(item){
             console.log("item: ",item);
         },{
-            requestTick: onAnimationFrame
+            requestTick: mozRequestAnimationFrame
         };
 
 
 ##2. Promise.js##
 
+A vanilla PromiseA, supporting <code>resolve, reject, progress</code>
 
-A vanilla PromiseA, supporting resolve, reject, progress.
+It also provides following sugar:
 
-It does provide following sugar:
+###.thenable()###
 
-###.thenable###
-
-It generates a thenable, which only provides a .then method. The resolve/reject/progress
+Generates a thenable, which only provides a .then method. The resolve/reject/progress
 instance methods are not accessible from this object.
 
 define(['path/to/Promise'],function(Promise){
@@ -231,11 +227,10 @@ define(['path/to/Promise'],function(Promise){
 });
 
 
-
 ##The code##
 
-Download the AMD modules here: (IteratorMixin.js)[./src/lib/]
+Download the AMD modules here: (IteratorMixin.js)[./tree/master/src/lib/]
 
-Find QUnit tests (here)[./testsrc/lib/index.html]
+Find QUnit tests (here)[./tree/master/testsrc/lib/index.html]
 
 
