@@ -212,25 +212,23 @@ It also provides following sugar:
 Generates a thenable, which only provides a .then method. The resolve/reject/progress
 instance methods are not accessible from this object.
 
-define(['path/to/Promise'],function(Promise){
+    define(['path/to/Promise'],function(Promise){
 
+        //'promise' has the resolve/reject/progress methods. hold on to this one!
+        var promise = new Promise();
 
-    //'promise' has the resolve/reject/progress methods. hold on to this one!
-    var promise = new Promise();
+        //'thenable' only has a .then subscription method, but not the resolve/reject/progress methods
+        //Give this one to the users of your API.
+        //it is linked - by quantum entanglement presumably - to the promise which generated it.
+        var thenable = promise.thenable();
 
-    //'thenable' only has a .then subscription method, but not the resolve/reject/progress methods
-    //Give this one to the users of your API.
-    //it is linked - by quantum entanglement presumably - to the promise which generated it.
-    var thenable = promise.thenable();
-
-
-});
+    });
 
 
 ##The code##
 
-Download the AMD modules here: (IteratorMixin.js)[./tree/master/src/lib/]
+Download the AMD modules here: [IteratorMixin.js](./tree/master/src/lib/)
 
-Find QUnit tests (here)[./tree/master/testsrc/lib/index.html]
+Find QUnit tests [here](./tree/master/testsrc/lib/index.html)
 
 
