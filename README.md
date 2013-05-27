@@ -10,20 +10,20 @@ Contains two modules:
 
 
 ##1. IterableMixin##
-A mixin for iterators, specifically designed for asynchronous collection comprehension. Supports basic  map, filter, reduce and groupBy functionality.
+A mixin for iterators, specifically designed for asynchronous collection comprehension. Supports basic  <code>map, filter, reduce<code> </code>and groupBy</code> functionality.
 
 It works with arrays (the native JS Array) and iterators (any object which implements .next()).
 
 It is particularly useful for applications which need to keep the UI responsive
 or to prevent stop-script errors when performing long running computation in loops (e.g. games, visualization software).
 
-The general idea is that elements from the collection (represented by the Array or iterator) are processed in small batch.
+The general idea is that elements from the collection (represented by the Array or iterator) are processed in small batches.
 
 You can configure this process (for example, set a time-limit on the duration of a batch, or a limit on the maximum number of elements that can be processed).
 
 All methods use thenables (CommonJS PromiseA) to represent the asynchronous values.
 
-Once, you have an iterator, you can use <code>.augment().</augment> to extend it with the functionality.
+Use <code>.augment().</code> to extend an iterator with the functionality.
 
     define([
         'path/to/IteratorMixin'
@@ -66,7 +66,7 @@ both with arrays and iterators alike. But it is a good real-life example of how 
 
 
 
-###Asynchronous collection comprehension###
+###map, filter, reduce and group asynchronously###
 
 Use any of the asynchronous methods to process elements of the iterator in small increments.
 
@@ -105,18 +105,17 @@ Returns a promise for a new collection, which contains all mapped items.
 
 Reduce all elements from an iterator to a single value. This takes two parameters:
 
-1. a function which combines the current
+1. a 'fold' function which combines the accumulated value (1st parameter) with a value from the collection (2nd parameter)
 2. an initial value
 
-
-       function sum(a,b){
+        function sum(a,b){
             return a + b;
-       }
+        }
 
-       iterator
-        .reduceAsync(sum,0)
-        .then(function(total){
-            console.log("total: " + total);
+        iterator
+            .reduceAsync(sum,0)
+            .then(function(total){
+                console.log("total: " + total);
         });
 
 ####filterAsync####
@@ -136,7 +135,8 @@ Takes a single predicate function and returns a new array which only contains th
 
 ####groupByAsync####
 
-Takes a single hash-fuctions, and groups all elements in a map where the key is the hash, and the
+Takes a single hash-fuctions, and groups all elements in a map where the key is the hash, and the value is an array with
+the objects that correspond to this hash.
 
            function sign(n){
                 if (n < 0){
@@ -151,17 +151,17 @@ Takes a single hash-fuctions, and groups all elements in a map where the key is 
            iterator
                 .groupByAsync(sign)
                 .then(function(map){
-                    //map is an POJSO (plain-old JS object)
-                    //where the key is eith
-                    //and the value is an array of the elements that
+                    //map is an plain-old JS object
+                    //where the key is either 'negative','zero', or 'positive'
+                    //and the value is an array of the elements that correspond to the hash-function
                 });
 
 
 ###Controlling the duration of the iteration###
 
-All Async method (mapAsync, reduceAsync, filterAsync, groupByAsync) can take an optional options object as a last parameter.
+All methods (mapAsync, reduceAsync, filterAsync, groupByAsync) can take an optional options object as a last parameter.
 
-This object can have 3 optional properties:
+This object has 3 optional properties:
 
 1. maxIterationTime: a number
 2. maxN: an integer specifying how many items may maximally be processed in a single time-step.
