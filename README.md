@@ -227,8 +227,8 @@ instance methods are not accessible from this object.
 
 ##The code##
 
-Download the AMD modules here: [IteratorMixin.js](./tree/master/src/lib/)
+Download the AMD modules here: [AMD modules](./src/lib/)
 
-Find QUnit tests [here](./tree/master/testsrc/lib/index.html)
+Find QUnit tests [here](./testsrc/lib/index.html)
 
 
