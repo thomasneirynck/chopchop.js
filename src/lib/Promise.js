@@ -1,5 +1,8 @@
-define([], function () {
+if (typeof define !== 'function') {
+  var define = require('amdefine')(module);
+}
 
+define([], function () {
   "use strict";
 
   var ITEMS_PER_LISTENER = 4;
@@ -34,11 +37,12 @@ define([], function () {
    * @return {*}
    */
   Promise.when = function (promiseOrValue, successHandler, errorHandler, progressHandler) {
-    if (promiseOrValue && typeof promiseOrValue.then === 'function') {
+    var p, res;
+    if (typeof promiseOrValue === 'object' && typeof promiseOrValue.then === 'function') {
       return promiseOrValue.then(successHandler, errorHandler, progressHandler);
     } else {
-      var p = new Promise();
-      var res = p.then(successHandler, errorHandler);
+      p = new Promise();
+      res = p.then(successHandler, errorHandler);
       setTimeout(function () {
         p.resolve(promiseOrValue);
       }, 0);
@@ -47,7 +51,7 @@ define([], function () {
   };
 
   Promise._whenError = function (v, errorHandler) {
-    if (v && typeof v.then === 'function') {
+    if (typeof v.then === 'function') {
       return v.then(NOOP, errorHandler);
     } else {
       var p = new Promise();
@@ -122,8 +126,15 @@ define([], function () {
         this._listeners[index + CONTINUATION_PROMISE_OFFSET] = continuationPromise;
       }
 
-      return continuationPromise.thenable();
+      return continuationPromise;
 
+    },
+    __breakIfComplete: function () {
+      if (this._resolved) {
+        throw new Error('This promise has already been resolved.');
+      } else if (this._rejected) {
+        throw new Error('This promise has already been rejected.');
+      }
     },
     progress: function (intermediateValue) {
       this.__breakIfComplete();
@@ -131,13 +142,6 @@ define([], function () {
       for (i = PROGRESS_HANDLER_OFFSET, l = this._listeners.length; i < l; i += ITEMS_PER_LISTENER) {
         listener = this._listeners[i];
         listener(intermediateValue);
-      }
-    },
-    __breakIfComplete: function () {
-      if (this._resolved) {
-        throw new Error('This promise has already been resolved.');
-      } else if (this._rejected) {
-        throw new Error('This promise has already been rejected.');
       }
     },
     resolve: function (resolution) {
@@ -158,5 +162,6 @@ define([], function () {
   freeze(Promise);
 
   return Promise;
+
 
 });

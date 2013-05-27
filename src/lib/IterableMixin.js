@@ -58,7 +58,7 @@ define(['./Promise'], function (Promise) {
     } else if (iterable instanceof Array) {
       if (Object.isFrozen) {
         if (!Object.isFrozen(iterable)) {
-          console.log('IteratorMixin: it is good practice to freeze your array before processing items asynchronously.');
+          console.log('IterableMixin: it is good practice to freeze your array before processing items asynchronously.');
         }
       }
       curIndex = -1;
@@ -79,7 +79,7 @@ define(['./Promise'], function (Promise) {
 
   /**
    *
-   * helper function. iterates over each element in the iterator.
+   * helper function. iterates over each element in the Iterable.
    *
    * @param callback
    * @param options optional parameters
@@ -153,19 +153,19 @@ define(['./Promise'], function (Promise) {
    * //Use it like this
    *
    * define([
-   *  'path/to/IteratorMixin'
-   * ], function(IteratorMixin){
+   *  'path/to/IterableMixin'
+   * ], function(IterableMixin){
      *
-     *  //an iterator must implement next.
-     *  var iterator = {
+     *  //an Iterable must implement next.
+     *  var Iterable = {
      *    next: function(){
      *      ... return the next element of the iteration or throw an error when the end has been reached ...
      *    }
      *  };
      *
-     *  //extend the iterator with the utility funcs. (use IteratorMixin.augment(object)).
-     *  IteratorMixin.augment(iterator);
-     *  iterator
+     *  //extend the Iterable with the utility funcs. (use IterableMixin.augment(object)).
+     *  IterableMixin.augment(Iterable);
+     *  Iterable
      *    .mapAsync(function(){
      *      //transform each element
      *    });
@@ -173,9 +173,9 @@ define(['./Promise'], function (Promise) {
      *      //do something with the resultCollection
      *    });
      *
-     *  //alternatively, you can call the functions directly in the iterator context
-     *  IteratorMixin.mapAsync.call(
-     *        iterator,
+     *  //alternatively, you can call the functions directly in the Iterable context
+     *  IterableMixin.mapAsync.call(
+     *        Iterable,
      *        .mapAsync(function(){
      *          //transform each element
      *        });
@@ -184,19 +184,19 @@ define(['./Promise'], function (Promise) {
      *        });
      *
      * //all funcionality is also present as simple functions
-     * //!!be aware that this funcion has a side-effect: namely it will exhaust the iterator!
+     * //!!be aware that this funcion has a side-effect: namely it will exhaust the Iterable!
      * //e.g.
-     *  IteratorMixin
-     *  .mapAsync(myIterator,someMapFunction);
+     *  IterableMixin
+     *  .mapAsync(myIterable,someMapFunction);
      *
      *
      *
      *});
    */
-  function IteratorMixin() {
+  function IterableMixin() {
   }
 
-  IteratorMixin.prototype = {
+  IterableMixin.prototype = {
 
     groupAsync: function (generateKey, options) {
       var group = {};
@@ -249,7 +249,7 @@ define(['./Promise'], function (Promise) {
     reduceAsync: function (fold, value, options) {
 
       if (value === undefined) {
-        throw new Error('Cannot reduce empty iterator with no initial value');
+        throw new Error('Cannot reduce empty Iterable with no initial value');
       }
 
       return _forEachAsync
@@ -263,24 +263,24 @@ define(['./Promise'], function (Promise) {
     }
   };
 
-  IteratorMixin.augment = function (destination) {
+  IterableMixin.augment = function (destination) {
     var key;
-    for (key in IteratorMixin.prototype) {
-      if (IteratorMixin.prototype.hasOwnProperty(key)) {
-        destination[key] = IteratorMixin.prototype[key];
+    for (key in IterableMixin.prototype) {
+      if (IterableMixin.prototype.hasOwnProperty(key)) {
+        destination[key] = IterableMixin.prototype[key];
       }
     }
     return destination;
   };
-  IteratorMixin.extend = IteratorMixin.mixin = IteratorMixin.augment;
+  IterableMixin.extend = IterableMixin.mixin = IterableMixin.augment;
 
   //for convenience, also provide the functionality as properties on the constructor function.
-  for (var key in IteratorMixin.prototype) {
-    if (IteratorMixin.prototype.hasOwnProperty(key)) {
+  for (var key in IterableMixin.prototype) {
+    if (IterableMixin.prototype.hasOwnProperty(key)) {
       (function (method) {
-        IteratorMixin[method] = function (iterable) {
+        IterableMixin[method] = function (iterable) {
           var args = Array.prototype.slice.call(arguments, 1);
-          return IteratorMixin.prototype[method].apply(iterable, args);
+          return IterableMixin.prototype[method].apply(iterable, args);
         };
       }(key));
     }
@@ -288,10 +288,10 @@ define(['./Promise'], function (Promise) {
 
   //prevent tampering with module.
   if (Object.freeze) {
-    Object.freeze(IteratorMixin.prototype);
-    Object.freeze(IteratorMixin);
+    Object.freeze(IterableMixin.prototype);
+    Object.freeze(IterableMixin);
   }
 
-  return IteratorMixin;
+  return IterableMixin;
 
 });

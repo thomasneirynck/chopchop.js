@@ -1,19 +1,19 @@
 define([
-  'lib/IteratorMixin'
-], function (IteratorMixin) {
+  'lib/IterableMixin'
+], function (IterableMixin) {
 
-  module("iteratorMixin");
+  module("IterableMixin");
 
   var array = [];
   var elements = 16;
   var counter = elements;
   while (counter--) array.unshift(counter);
 
-  function TestIterator() {
+  function TestIterable() {
     this._i = 0;
   }
 
-  TestIterator.prototype = {
+  TestIterable.prototype = {
     _a: array,
     next: function () {
       if (this._i >= this._a.length) {
@@ -26,16 +26,16 @@ define([
   };
 
 
-  IteratorMixin.extend(TestIterator.prototype);
+  IterableMixin.extend(TestIterable.prototype);
 
   test("module return", function () {
-    ok(typeof IteratorMixin === 'function', "should get function from module");
+    ok(typeof IterableMixin === 'function', "should get function from module");
   });
 
 
   asyncTest("forEachAsync- all in one", function () {
 
-    var it = new TestIterator();
+    var it = new TestIterable();
 
     var tickIndex = 0;
     var firsttime;
@@ -72,7 +72,7 @@ define([
 
   asyncTest("mapAsync- one by one", function () {
 
-    var it = new TestIterator();
+    var it = new TestIterable();
     var counter = 0;
     var lastTick = 0;
 
@@ -100,7 +100,7 @@ define([
 
   asyncTest("mapAsync", function () {
 
-    var it = new TestIterator();
+    var it = new TestIterable();
 
     var promise = it.mapAsync(function (e) {
       return e + 1000;
@@ -116,7 +116,7 @@ define([
 
   asyncTest("filterAsync", function () {
 
-    var it = new TestIterator();
+    var it = new TestIterable();
 
     var promise = it.filterAsync(function (e) {
       return (e % 2 === 0);
@@ -132,7 +132,7 @@ define([
 
   asyncTest("reduceAsync", function () {
 
-    var it = Object.create(new TestIterator());
+    var it = Object.create(new TestIterable());
 
     var promise = it.reduceAsync(function (a, b) {
       return a + b;
@@ -150,7 +150,7 @@ define([
         throw 'asdf';
       }
     };
-    IteratorMixin.extend(it);
+    IterableMixin.extend(it);
 
     var promise = it.reduceAsync(function (a, b) {
       return a + b;
@@ -171,7 +171,7 @@ define([
       setTimeout(callback, 0);
     }
 
-    var it = Object.create(new TestIterator());
+    var it = Object.create(new TestIterable());
     it
       .mapAsync(function () {
         return 'ignore';
