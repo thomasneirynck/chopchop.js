@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animation Frame JS tests</title>
+    <link rel="stylesheet" href="./qunit/qunit.css"/>
+    <script src="./require/require.js"></script>
+    <script src="./qunit/qunit.js"></script>
+</head>
+<body>
+<div id="qunit"></div>
+<script>
+
+
+    //force remove native implementations (so we can test shim).
+    (function () {
+        var vendors = ['ms', 'moz', 'webkit', 'o'], x;
+        for (x = 0; x < vendors.length; x += 1) {
+            window[vendors[x] + 'RequestAnimationFrame'] = null;
+            window[vendors[x] + 'CancelRequestAnimationFrame'] = null;
+        }
+    }());
+
+    requirejs.config({
+        baseUrl: '..',
+        paths: {
+            lib: 'src/lib',
+            testlib: 'testsrc/lib'
+        }
+    });
+
+    QUnit.config.autostart = false;
+    require([
+        'testlib/animationFrame'
+    ], function () {
+        QUnit.start(); //Tests loaded, run tests
+    });
+</script>
+</body>
+</html>

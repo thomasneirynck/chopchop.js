@@ -116,7 +116,7 @@ define([
 
   asyncTest("mapAsync - array", function () {
 
-    var ar = [1,2,3,4,5];
+    var ar = Object.freeze([1,2,3,4,5]);
 
     var promise = IterableMixin.mapAsync(ar,function (e) {
       return e + 1000;

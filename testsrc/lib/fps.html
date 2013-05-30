@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>frame rate viewer test</title>
+    <link rel="stylesheet" href="../qunit/qunit.css"/>
+    <script src="../require/require.js"></script>
+    <script src="../qunit/qunit.js"></script>
+</head>
+<body>
+<div id="qunit"></div>
+<script>
+
+    requirejs.config({
+        baseUrl: '..',
+        paths: {
+            lib: 'src/lib',
+            testlib: 'testsrc/lib'
+        }
+    });
+
+    require([
+        'lib/animationFrame'
+    ], function (animationFrame) {
+
+
+        //small test-app for the fps line chart.
+        var i = 0;
+        (function next(frame) {
+            animationFrame.requestAnimationFrame(next);
+            var time = Date.now() + (Math.random() * 16);
+            while(Date.now() < time){
+
+            }
+            if (i % 180 === 0) {
+                console.log('180 frames: ', frame);
+            }
+            i += 1;
+        }());
+
+
+    });
+</script>
+</body>
+</html>
