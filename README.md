@@ -1,15 +1,12 @@
 #chopchop.js#
 
-Asynchronous processing of collections made easy.
-
-Contains two modules:
+Assorted functionality for asynchronous processing.
 
 1. IterableMixin: a mixin with asynchronous array comprehension methods (map, reduce, groupBy, filter) for iterables.
 It works with arrays or iterators.
 2. Promise: lightweight PromiseA implementationand
-3. animationFrame: a polyfill for the browser's native requestAnimationFrame. It includes a framerate display, which is
-useful for debugging.
-
+3. animationFrame: a polyfill for the browser's native requestAnimationFrame. It includes a framerate display you can add
+to your webpage during development.
 
 
 ##1. IterableMixin##
@@ -208,7 +205,7 @@ A function which invokes a callback. Only elements from the iterator will be pro
 
 A vanilla PromiseA, supporting <code>resolve, reject, progress</code>
 
-It also provides following sugar:
+It has this sugar.
 
 ###.thenable()###
 
@@ -229,7 +226,11 @@ instance methods are not accessible from this object.
 
 ##3. animationFrame##
 
-A polyfill for  , inspired by Paul Irish's shim, with some slight improvements. Includes a frame-rate display.
+A polyfill for different vendor's animationFrame (moz, webkit,...). Inspired by Erik Moller's [shim](http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating),
+with some slight improvements to the core logic. The fallback implementation based on setTimeout, will correctly group frame-request callbacks together,
+and call them in a single 'frame'. This is the same behaviour as the native implementations.
+
+IT also includes a frame-rate display. This is convenient.
 
 ###.requestAnimationFrame(callback,[domNode])###
 
@@ -252,9 +253,9 @@ as a query parameter. This is useful for debugging.
 
     http://my.domain.com/some/app?fps=show
 
-The graph can be modified with following parameters
+The graph can be modified with following parameters (all optional)
 
-1. fps_w:  the width of the line chart, in pixels.
+1. fps_w: the width of the line chart, in pixels.
 2. fps_h: the height of the line chart, in pixels.
 3. fps_frameref: the target frame duration, in milliseconds, indicated by a horizontal line. The default is 16 (ca. 60 frames per second).
 4. fps_framemax: the maximum frame duration of the line-chart
