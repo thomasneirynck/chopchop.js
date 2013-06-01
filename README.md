@@ -281,8 +281,8 @@ Cancels the request.
 
 ###?fps=show###
 
-Applications using the animationFrame module to request animation frames, can display a frame-rate graph by adding fps=show
-as a query parameter. This is useful for debugging.
+When you use the animationFrame module to request animation frames, you can display a frame-rate line chart by adding fps=show
+as a query parameter. This can be useful for debugging.
 
     http://my.domain.com/some/app?fps=show
 
@@ -293,7 +293,7 @@ The graph can be modified with following parameters (all optional)
 3. fps_frameref: the target frame duration, in milliseconds, indicated by a horizontal line. The default is 16 (ca. 60 frames per second).
 4. fps_framemax: the maximum frame duration of the line-chart
 
-e.g. a graph measuring 256 by 128 pixels, with a target frame rate of about 30 fps.
+e.g. a graph measuring 256 by 128 pixels, with a target frame rate of about 30 fps (the orange line).
 
     http://my.domain.com/some/app?fps=show&fps_w=256&fps_h=128&fps_frameref=33
 
