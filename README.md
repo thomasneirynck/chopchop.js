@@ -226,24 +226,57 @@ instance methods are not accessible from this object.
 
 ##3. animationFrame##
 
-A polyfill for different vendor's animationFrame (moz, webkit,...). Inspired by Erik Moller's [shim](http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating),
-with some slight improvements to the core logic. The fallback implementation based on setTimeout, will correctly group frame-request callbacks together,
-and call them in a single 'frame'. This is the same behaviour as the native implementations.
+A polyfill for all the requestAnimationFrame implementations (firefoz, chrome,ie, safari, opera).
 
-IT also includes a frame-rate display. This is convenient.
+Inspired by Erik Moller's [shim](http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating).
+
+Some slight improvements include:
+
+    1. The fallback implementation based on setTimeout, will correctly group consecutive frame-requests together,
+    and call them in a single 'frame'. This is the same behaviour as the native implementations.
+    (of course, this only occurs when these requests follow each other very shortly).
+    2. a polyfill for cancelAnimationFrame
+    3. a framerate line chart you can add to your webpage (easy for debugging).
+
 
 ###.requestAnimationFrame(callback,[domNode])###
 
-Invokes the callback. Usually, the callback would contain some rendering code, for example code that draws on a canvas.
+Invokes the callback. Usually, the callback would contain some rendering code (e.g. drawing to a HTML5 canvas).
+
+The return is a handle for that frame.
 
     define(['path/to/animationFrame'],function(animationFrame){
+
+        //example 1: a simple paint loop
         (function render(){
-            animationFrame(render);
-
+            animationFrame.requestAnimationFrame(render);
             ... draw something to a canvas here ...
-
         }();
+
+
+        //example 2: consecutive frame request are batched together.
+        var id1,id2;
+        animationFrame.requestAnimationFrame(function(id){
+            id1 = id;
+        });
+        animationFrame.requestAnimationFrame(function(id){
+            id2 = id;
+        });
+        //id1 === id2
+
     });
+
+
+
+###.cancelAnimationFrame(handle)###
+
+Cancels the request.
+
+        var handle = animationFrame.requestAnimationFrame(function(){
+            //this will never execute, since the frame is immediately cancelled.
+        });
+        animationFrame.cancelAnimationFrame(handle);
+
 
 
 ###?fps=show###
