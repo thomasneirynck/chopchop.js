@@ -11,7 +11,7 @@
 <script>
 
     requirejs.config({
-        baseUrl: '..',
+        baseUrl: '../..',
         paths: {
             lib: 'src/lib',
             testlib: 'testsrc/lib'
@@ -24,6 +24,7 @@
 
 
         //small test-app for the fps line chart.
+        //add fps=show to the url to see the framerate.
         var i = 0;
         (function next(frame) {
             animationFrame.requestAnimationFrame(next);

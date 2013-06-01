@@ -116,7 +116,7 @@ define([
 
   asyncTest("mapAsync - array", function () {
 
-    var ar = Object.freeze([1,2,3,4,5]);
+    var ar = Object.freeze([1, 2, 3, 4, 5]);
 
     var promise = IterableMixin.mapAsync(ar,function (e) {
       return e + 1000;
@@ -197,6 +197,55 @@ define([
       })
       .then(function () {
         equal(a - 1, elementCount, 'should have used ticker');
+        start();
+      });
+
+  });
+
+  asyncTest("reduce - cyber", function () {
+
+    var it = {
+      _i: -1,
+      _l: 10000,
+      next: function () {
+        this._i += 1;
+        if (this._i < this._l) {
+          return this._i;
+        } else {
+          throw 'stop!';
+        }
+      }
+    };
+
+    IterableMixin.augment(it);
+
+
+    it.reduceCyber(
+      function (acc, a) {
+        var to = Date.now() + 2;
+        while (Date.now() < to);
+        return acc + a;
+      }, 0,{
+        targetTime: 16,
+        n: 1
+      })
+      .then(function () {
+        ok(true);
+        start();
+      });
+
+    it2 = Object.create(it);
+    it2.reduceCyber(
+      function (acc, a) {
+        var to = Date.now() + 2;
+        while (Date.now() < to);
+        return acc + a;
+      }, 0,{
+        targetTime: 16,
+        n: 100
+      })
+      .then(function () {
+        ok(true);
         start();
       });
 

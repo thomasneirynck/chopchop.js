@@ -2,7 +2,7 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(module);
 }
 
-define(['./Promise'], function (Promise) {
+define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
 
   "use strict";
 
@@ -199,6 +199,76 @@ define(['./Promise'], function (Promise) {
   }
 
   IterableMixin.prototype = {
+
+    reduceCyber: function (fold, accumulator, options) {
+
+      console.log('arguments', arguments);
+      console.log(this);
+
+      options = options || {};
+
+
+      var p = new Promise();
+      var startNr = options.n || 20;
+      var targetTime = options.targetTime || 20;
+      var ticker = options.requestTick || animationFrame.requestAnimationFrame;
+      var control = options.control || 1;
+
+
+      var nr = startNr;
+      var first = true;
+      var stop = false;
+      var bef = now();
+      var self = this;
+
+
+      function next() {
+
+
+        first = false;
+        var i;
+        for (i = 0; !stop && i < nr; i += 1) {
+          try {
+            var el = self.next();
+            accumulator = fold(accumulator, el);
+          } catch (e) {
+            stop = true;
+          }
+        }
+
+        var newbef = now();
+        var duration = newbef - bef;
+        console.log('tick,---------', nr, duration, targetTime);
+        if (!first) {
+          if (duration < targetTime) {
+            var diff = targetTime - duration;
+            var sf = diff / targetTime;
+            nr += sf * nr;
+            ;
+          } else {
+            var diff = duration - targetTime;
+            var sf = diff / targetTime;
+            nr -= sf * nr;
+          }
+        }
+
+        nr = (nr < 2) ? 2 : nr;
+        nr = Math.round(nr);
+        bef = newbef;
+
+        if (!stop) {
+          ticker(next);
+        } else {
+          console.log('done', accumulator);
+          p.resolve(accumulator);
+        }
+
+      }
+
+      ticker(next);
+
+      return p;
+    },
 
     groupByAsync: function (generateKey, options) {
       var group = {};

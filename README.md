@@ -1,11 +1,14 @@
 #chopchop.js#
 
-A small javascript utility library making asynchronous processing of collections more easy.
+Asynchronous processing of collections made easy.
 
 Contains two modules:
 
-1. IterableMixin: a mixin with asynchronous array comprehension methods for iterables. It works with arrays or iterators.
+1. IterableMixin: a mixin with asynchronous array comprehension methods (map, reduce, groupBy, filter) for iterables.
+It works with arrays or iterators.
 2. Promise: lightweight PromiseA implementationand
+3. animationFrame: a polyfill for the browser's native requestAnimationFrame. It includes a framerate display, which is
+useful for debugging.
 
 
 
@@ -224,6 +227,43 @@ instance methods are not accessible from this object.
 
     });
 
+##3. animationFrame##
+
+A polyfill for  , inspired by Paul Irish's shim, with some slight improvements. Includes a frame-rate display.
+
+###.requestAnimationFrame(callback,[domNode])###
+
+Invokes the callback. Usually, the callback would contain some rendering code, for example code that draws on a canvas.
+
+    define(['path/to/animationFrame'],function(animationFrame){
+        (function render(){
+            animationFrame(render);
+
+            ... draw something to a canvas here ...
+
+        }();
+    });
+
+
+###?fps=show###
+
+Applications using the animationFrame module to request animation frames, can display a frame-rate graph by adding fps=show
+as a query parameter. This is useful for debugging.
+
+    http://my.domain.com/some/app?fps=show
+
+The graph can be modified with following parameters
+
+1. fps_w:  the width of the line chart, in pixels.
+2. fps_h: the height of the line chart, in pixels.
+3. fps_frameref: the target frame duration, in milliseconds, indicated by a horizontal line. The default is 16 (ca. 60 frames per second).
+4. fps_framemax: the maximum frame duration of the line-chart
+
+e.g. a graph measuring 256 by 128 pixels, with a target frame rate of about 30 fps.
+
+    http://my.domain.com/some/app?fps=show&fps_w=256&fps_h=128&fps_frameref=33
+
+![the frame rate viewer](fps.png)
 
 ##The code##
 

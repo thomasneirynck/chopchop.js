@@ -2,7 +2,7 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(module);
 }
 
-define([], function () {
+define(['./Promise'], function (Promise) {
 
   var moduleReturn, requestAnimationFrame, cancelAnimationFrame;
   var lastTime, callbackQueue, now, shimIdCounter, idQueue, timeoutId, callbackBuffer;
@@ -124,7 +124,7 @@ define([], function () {
       frameDurations.length = width;
 
       var i, l;
-      for (i = 0, l = frameDurations.length;  i < l; i += 1) {
+      for (i = 0, l = frameDurations.length; i < l; i += 1) {
         frameDurations[i] = 0;
       }
       var index = 0;
@@ -194,7 +194,7 @@ define([], function () {
 
         context.restore();
         context.fillStyle = 'rgba(255,255,255,1)';
-        context.fillText('fps : '+ averageTime,4,18);
+        context.fillText('rt : ' + averageTime, 4, 18);
         context.save();
 
       }
@@ -221,7 +221,14 @@ define([], function () {
   //return module. freeze to prevent tampering.
   moduleReturn = {
     requestAnimationFrame: requestAnimationFrame,
-    cancelAnimationFrame: cancelAnimationFrame
+    cancelAnimationFrame: cancelAnimationFrame,
+    promiseAnimationFrame: function () {
+      var p = new Promise();
+      requestAnimationFrame(function (a) {
+        p.resolve(a);
+      });
+      return p.thenable();
+    }
   };
 
   if (Object.freeze) {
