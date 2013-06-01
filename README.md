@@ -4,9 +4,8 @@ Assorted functionality for asynchronous processing.
 
 1. IterableMixin: a mixin with asynchronous array comprehension methods (map, reduce, groupBy, filter) for iterables.
 It works with arrays or iterators.
-2. Promise: lightweight PromiseA implementationand
-3. animationFrame: a polyfill for the browser's native requestAnimationFrame. It includes a framerate display you can add
-to your webpage during development.
+2. Promise: lightweight PromiseA implementation
+3. animationFrame: a polyfill for the browser's native requestAnimationFrame/cancelAnimationFrame.
 
 
 ##1. IterableMixin##
