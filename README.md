@@ -267,8 +267,8 @@ e.g. a graph measuring 256 by 128 pixels, with a target frame rate of about 30 f
 
 ##The code##
 
-Download the AMD modules here: [AMD modules](./src/lib/)
+Download the AMD modules here: [AMD modules](./src/lib/).
 
-Find QUnit tests [here](./testsrc/lib/index.html)
+Find QUnit tests [here](./testsrc/lib/).
 
 
