@@ -40,7 +40,6 @@ define([
       return a;
     }());
 
-    //2 reduce nodes
     var reducerNodes = (function() {
       var a = [];
       for (var i = 0; i < reducenodes; i += 1) {
@@ -84,7 +83,93 @@ define([
 
   asyncTest("mapReduce - another example", function() {
 
+    var mapnodes = 2;
+    var reducernodes = 1;
 
+    var mapperNodes = (function() {
+      var a = [];
+      var workerFunc;
+      for (var i = 0; i < mapnodes; i += 1) {
+        workerFunc = Promise.promisifyWebWorker('dpSimplify.js');
+        a.push(function(original) {
+          var index = original.index;
+          var originalLine = original.line;
+          return workerFunc(originalLine).then(function(simplifiedLine) {
+            return {
+              polyLine: {
+                index: index,
+                line: simplifiedLine
+              }
+            };
+          });
+        });
+      }
+      return a;
+    }());
+
+    var reducerNodes = [function(acc, value) {
+      if (acc === undefined) {
+        acc = [];
+      }
+      acc[value.index] = value.line;
+      return acc;
+    }];
+
+    var partition = function(a) {
+      return 0;
+    };
+
+    var lineIterator = (function() {
+      var lines = [
+        [
+          {x: 0, y: 0},
+          {x: 10, y: 30},
+          {x: 20, y: 100},
+          {x: 122, y: 200}
+        ],
+        [
+          {x: 0, y: 0},
+          {x: 10, y: 30},
+          {x: 20, y: 100},
+          {x: 122, y: 100}
+        ],
+        [
+          {x: 0, y: 0},
+          {x: 10, y: 30},
+          {x: 20, y: 100},
+          {x: 122, y: 200}
+        ]
+      ];
+
+      var i = -1;
+      return {
+        next: function() {
+          var ob = lines.pop();
+          i += 1;
+          if (ob) {
+            return {index: i, line: ob};
+          } else {
+            throw 'STOP';
+          }
+        }
+      };
+    }());
+
+    var testMapReduce = new MapReduce({
+      mappers: mapperNodes,
+      reducers: reducerNodes,
+      partition: partition,
+      inputIterator: lineIterator
+    });
+
+
+    var bef = Date.now();
+    testMapReduce.then(function(line) {
+      console.log(Date.now() - bef);
+      console.log('done processing',line);
+      ok(true);
+      start();
+    });
 
   });
 

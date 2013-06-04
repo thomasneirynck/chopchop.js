@@ -15,6 +15,7 @@ define(['lib/Promise'], function(Promise) {
       self._currentKey = undefined;
       notifyNewAccumulatedValue(k, newAccumulatedValue);
       self.__doNew();
+      return true;
     }
   }
 
@@ -36,8 +37,7 @@ define(['lib/Promise'], function(Promise) {
       this._currentKey = k;
 
       this._busy = true;
-
-      this._reduce(accum, v).then(this.__onReduceComplete);
+      Promise.when(this._reduce(accum, v), this.__onReduceComplete);
     },
     pushKeyValue: function(key, value) {
       this.__reduceQueue.push([key, value]);
@@ -147,24 +147,24 @@ define(['lib/Promise'], function(Promise) {
         self._process();
       };
 
-      mapperNode(input).then(doneMapping);
+      Promise.when(mapperNode(input), doneMapping);
     },
 
     run: function() {
-      if (this._activated) {
-        throw new Error('Cannot start MapReduce task twice.');
-      }
-      this._activated = true;
       this.__nextInput();
     },
 
     __nextInput: function() {
-      var self = this;
-      if (self._noMoreInputs) {
+      if (this._noMoreInputs) {
         return;
       }
-      var next = self._inputIterator.next();
-      next.then(self.__onInputSuccess, self.__onInputError)
+      var next;
+      try {
+        next = this._inputIterator.next();
+        Promise.when(next, this.__onInputSuccess, this.__onInputError);
+      } catch (e) {
+        this.__onInputError(e);
+      }
     }
   };
 
