@@ -225,30 +225,77 @@ define([
         var to = Date.now() + 2;
         while (Date.now() < to);
         return acc + a;
-      }, 0,{
+      }, 0, {
         targetTime: 16,
-        n: 1
+        n: 20
       })
       .then(function () {
         ok(true);
         start();
       });
 
-    it2 = Object.create(it);
-    it2.reduceCyber(
-      function (acc, a) {
-        var to = Date.now() + 2;
-        while (Date.now() < to);
-        return acc + a;
-      }, 0,{
-        targetTime: 16,
-        n: 100
-      })
-      .then(function () {
-        ok(true);
-        start();
-      });
+//    it2 = Object.create(it);
+//    it2.reduceCyber(
+//      function (acc, a) {
+//        var to = Date.now() + 2;
+//        while (Date.now() < to);
+//        return acc + a;
+//      }, 0, {
+//        targetTime: 16,
+//        n: 20
+//      })
+//      .then(function () {
+//        ok(true);
+//        start();
+//      });
+//
+//    it3 = Object.create(it);
+//    it3.reduceCyber(
+//      function (acc, a) {
+//        var to = Date.now() + 2;
+//        while (Date.now() < to);
+//        return acc + a;
+//      }, 0, {
+//        targetTime: 16,
+//        n: 20
+//      })
+//      .then(function () {
+//        ok(true);
+//        start();
+//      });
+//
+//    it4 = Object.create(it);
+//    it4.reduceCyber(
+//      function (acc, a) {
+//        var to = Date.now() + 2;
+//        while (Date.now() < to);
+//        return acc + a;
+//      }, 0, {
+//        targetTime: 16,
+//        n: 20
+//      })
+//      .then(function () {
+//        ok(true);
+//        start();
+//      });
+//
+//    it5 = Object.create(it);
+//    it5.reduceCyber(
+//      function (acc, a) {
+//        var to = Date.now() + 2;
+//        while (Date.now() < to);
+//        return acc + a;
+//      }, 0, {
+//        targetTime: 16,
+//        n: 20
+//      })
+//      .then(function () {
+//        ok(true);
+//        start();
+//      });
 
   });
 
+
 });
+

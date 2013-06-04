@@ -224,7 +224,6 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
 
       function next() {
 
-
         first = false;
         var i;
         for (i = 0; !stop && i < nr; i += 1) {
@@ -238,28 +237,20 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
 
         var newbef = now();
         var duration = newbef - bef;
-        console.log('tick,---------', nr, duration, targetTime);
+
+        var sf;
         if (!first) {
-          if (duration < targetTime) {
-            var diff = targetTime - duration;
-            var sf = diff / targetTime;
-            nr += sf * nr;
-            ;
-          } else {
-            var diff = duration - targetTime;
-            var sf = diff / targetTime;
-            nr -= sf * nr;
-          }
+          sf = targetTime / duration;
+          nr *= sf;
         }
 
-        nr = (nr < 2) ? 2 : nr;
+        nr = (nr < 1) ? 1 : nr;
         nr = Math.round(nr);
         bef = newbef;
 
         if (!stop) {
           ticker(next);
         } else {
-          console.log('done', accumulator);
           p.resolve(accumulator);
         }
 
