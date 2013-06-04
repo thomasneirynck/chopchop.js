@@ -34,16 +34,14 @@
         baseUrl: '../..',
         paths: {
             lib: 'src/lib',
-            testlib: 'testsrc/lib'
+            testdev: 'testsrc/dev'
         }
     });
 
     QUnit.config.autostart = false;
     require([
-        'testlib/Promise-test',
-        'testlib/IterableMixin-test',
-        'testlib/animationFrame-test'
-    ], function (Promise) {
+        'testdev/MapReduce-test'
+    ], function () {
         QUnit.start();
     });
 

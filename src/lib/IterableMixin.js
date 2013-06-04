@@ -285,7 +285,6 @@ define(['./Promise', './animationFrame'], function(Promise, animationFrame) {
             items.push(item);
           }, options)
           .then(function() {
-            console.log(group);
             return group;
           });
     },

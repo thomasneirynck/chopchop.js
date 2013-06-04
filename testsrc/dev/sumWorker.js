@@ -1,8 +1,12 @@
-// postMessage("I\'m working before postMessage(\'ali\').");
 onmessage = function(oEvent) {
-  setTimeout(function() {
-    postMessage('foo ' + oEvent.data);
-  }, Math.round(Math.random() * 1000));
+  var dt = oEvent.data;
+  var acc = dt[0];
+  var value = dt[1];
+  if (acc === undefined) {
+    acc = 0;
+  }
+  acc += value;
+  postMessage(acc);
 };
 
 

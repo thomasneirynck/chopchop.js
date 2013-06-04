@@ -1,170 +1,94 @@
-define([], function() {
+define([
+  'testdev/MapReduce',
+  'lib/Promise'
+], function(MapReduce, Promise) {
 
-  function Reducer(reduceFunc, notifyNewAccumulatedValue, getAccumulator) {
+  module('MapReduce dev -tests');
 
-    this._currentKey = null;
-    this._reduce = reduceFunc;
-    this.__reduceQueue = [];
-    this.__getAccumulator = getAccumulator;
-    this._busy = false;
-
-    var self = this;
-    this.__onReduceComplete = function(newAccumulatedValue) {
-      var k = self._currentKey;
-      self._busy = false;
-      self._currentKey = undefined;
-      notifyNewAccumulatedValue(k, newAccumulatedValue);
-      self.__doNew();
-    }
+  function LineIterator() {
+    this._objects = ['you load sixteen tons', 'what do you get', 'a day older', 'and deeper in debt', 'and sixteen tons', 'well thats quite something', 'something feels fishy'];
   }
 
-  Reducer.prototype = {
-    __doNew: function() {
-
-      if (this._busy) {
-        return;
-      }
-
-      var kv = this.__reduceQueue.pop();
-      var k, v, accum;
-      if (!kv) {
-        return;
-      }
-      k = kv[0];
-      v = kv[1];
-      accum = this.__getAccumulator(k);
-      this._currentKey = k;
-
-      this._busy = true;
-
-      this._reduce(accum, v).then(this.__onReduceComplete);
-    },
-    pushKeyValue: function(key, value) {
-      this.__reduceQueue.push([key, value]);
-      this.__doNew();
-    },
-    isEmpty: function() {
-      return this.__reduceQueue.length === 0;
+  LineIterator.prototype = {
+    next: function() {
+      var ob = this._objects.pop();
+      return {
+        then: function(suc, error) {
+          setTimeout(function() {
+            var v;
+            if (ob) {
+              v = suc(ob);
+            } else {
+              v = error('done iterating');
+            }
+          }, 1);
+        }
+      };
     }
   };
 
-  function reducerIsEmpty(e) {
-    return e.isEmpty()
-  }
+  asyncTest('test map reduce - word count example', function() {
 
-  function MapReduce(options) {
+    var mapnodes = 2;
+    var reducenodes = 2;
 
-    var self = this;
+    var mapperNodes = (function() {
+      var a = [];
+      for (var i = 0; i < mapnodes; i += 1) {
+        a.push(Promise.promisifyWebWorker('groupCountWorker.js'));
+      }
+      return a;
+    }());
 
-    var mappers = options.mappers;
-    var reducers = options.reducers;
+    //2 reduce nodes
+    var reducerNodes = (function() {
+      var a = [];
+      for (var i = 0; i < reducenodes; i += 1) {
+        a.push(Promise.promisifyWebWorker('sumWorker.js', {
+          mapArguments: function(acc, value) {
+            return [acc, value];
+          }
+        }));
+      }
+      return a;
+    }());
 
-    this._partition = options.partition;
-    this._inputIterator = options.inputIterator;
-    this._inputQueue = [];
-
-    this._resultMap = {};
-    this._mapperNodes = mappers.slice();
-    this._totalMaps = mappers.length;
-    this._noMoreInputs = false;
-
-    var acceptNotify = function(key, value) {
-      self._resultMap[key] = value;
-      self._process();
+    var partition = function(a) {
+      if (a < 'middle') {
+        return 0;
+      } else {
+        return 1;
+      }
     };
-    var getAccum = function(key) {
-      return self._resultMap[key];
-    };
 
-    this._reducerNodes = reducers.map(function(reducer) {
-      return new Reducer(reducer, acceptNotify, getAccum);
+    var iterator = new LineIterator();
+
+    var testMapReduce = new MapReduce({
+      mappers: mapperNodes,
+      reducers: reducerNodes,
+      partition: partition,
+      inputIterator: iterator
     });
 
-    this.__onInputSuccess = function(input) {
-      self._inputQueue.push(input);
-      self._process();
-      self.__nextInput();
-      return;
-    };
-
-    this.__onInputError = function(er) {
-      self._noMoreInputs = true;
-      self._process();
-    };
-
-    this._activated = false;
-  }
-
-  MapReduce.prototype = {
-
-    _process: function() {
-
-      if (this._done) {
-        return;
-      }
-
-      var noBusyMapNodes = (this._totalMaps === this._mapperNodes.length);
-      var noBusyReduceNodes = this._reducerNodes.every(reducerIsEmpty);
-      var noMoreData = this._noMoreInputs;
-
-      if (noMoreData && noBusyMapNodes && noBusyReduceNodes) {
-        this._done = true;
-        return;
-      } else {
-        //perform map tasks.
-        if (this._inputQueue.length > 0) {
-          this.__doMap();
+    testMapReduce.then(function(result) {
+      var ref = {"something": 2, "feels": 1, "fishy": 1, "well": 1, "quite": 1, "thats": 1, "you": 2, "load": 1, "tons": 2, "sixteen": 2, "do": 1, "get": 1, "what": 1, "a": 1, "older": 1, "day": 1, "and": 2, "debt": 1, "in": 1, "deeper": 1};
+      for (var i in ref) {
+        if (ref.hasOwnProperty(i)) {
+          equal(result[i], ref[i], 'does not match ref result for ' + i);
         }
       }
-    },
+      start();
+    });
 
-    __doMap: function() {
+  });
 
-      if (this._mapperNodes.length === 0) {
-        return;
-      }
+  asyncTest("mapReduce - another example", function() {
 
-      var input = this._inputQueue.pop();
-      var self = this;
-      var mapperNode = this._mapperNodes.pop();
 
-      var doneMapping = function(map) {
 
-        //reclaim map node.
-        self._mapperNodes.push(mapperNode);
-
-        var reduceIndex;
-        //reduce nodes.
-        for (var key in map) {
-          if (map.hasOwnProperty(key)) {
-            reduceIndex = self._partition(key, self._reducerNodes.length);
-            self._reducerNodes[reduceIndex].pushKeyValue(key, map[key]);
-          }
-        }
-        self._process();
-      };
-
-      mapperNode(input).then(doneMapping);
-    },
-
-    run: function() {
-      if (this._activated) {
-        throw new Error('Cannot start MapReduce task twice.');
-      }
-      this._activated = true;
-      this.__nextInput();
-    },
-
-    __nextInput: function() {
-      var self = this;
-      if (self._noMoreInputs) {
-        return;
-      }
-      var next = self._inputIterator.next();
-      next.then(self.__onInputSuccess, self.__onInputError)
-    }
-  };
-
-  return MapReduce;
+  });
 
 });
+
+
+

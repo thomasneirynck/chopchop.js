@@ -19,6 +19,9 @@ define([], function() {
   var seal = Object.seal || NOOP;
   var freeze = Object.freeze || NOOP;
   var $N = {};
+  var resolveMessage = function(data, handler) {
+    handler.resolve(data);
+  };
 
   /**
    * Create promise
@@ -68,7 +71,7 @@ define([], function() {
     }
   };
 
-  Promise.promisifyWebWorker = function(workerFile, handleReceivedMessage, options) {
+  Promise.promisifyWebWorker = function(workerFile, options) {
 
     if (!Worker) {
       throw new Error('Web Workers not supported');
@@ -76,6 +79,7 @@ define([], function() {
 
     options = options || $N;
 
+    var handleReceivedMessage = options.handleReceivedMessage || resolveMessage;
     var worker = new Worker(workerFile);
     var mapArguments = options.mapArguments || IDENTITY;
 
@@ -115,6 +119,7 @@ define([], function() {
           promise.progress(e);
         }
       };
+
       var message = mapArguments.apply(null, task.args);
       busy = true;
       worker.postMessage(message);
@@ -122,6 +127,9 @@ define([], function() {
 
     var promisableWorker = function() {
       var resultPromise = new Promise();
+      if (arguments.length === 0) {
+        throw new Error('THIS IS BAD!!!!');
+      }
       requestQueue.push({
         p: resultPromise,
         args: arguments
@@ -130,11 +138,12 @@ define([], function() {
       return resultPromise;
     };
 
+    var initialized;
     if (typeof options.initialize === 'function') {
-      var initialized = options.initialize(worker);
+      initialized = options.initialize(worker);
       return Promise.when(initialized,
           function() {
-            //subscribe to message here.
+            //subscribe to onMessage when done, and then return the new function.
             worker.addEventListener('message', onMessage);
             return promisableWorker;
           });

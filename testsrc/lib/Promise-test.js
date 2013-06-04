@@ -316,9 +316,7 @@ define([
     if (!Worker) {
       ok(true, 'worker test is irrellevant');
     }
-    var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
-      handler.resolve(returnValue);
-    });
+    var func = new Promise.promisifyWebWorker('testWorker.js');
     equal(typeof func, 'function', 'should get a function after promisifying');
     var pr = func('bar');
     pr.then(function(v) {
@@ -331,9 +329,7 @@ define([
     if (!Worker) {
       ok(true, 'worker test is irrelevant');
     }
-    var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
-      handler.resolve(returnValue);
-    });
+    var func = new Promise.promisifyWebWorker('testWorker.js');
 
     var called1, called2, called3, called4;
     called1 = called2 = called3 = called4 = false;
@@ -366,8 +362,10 @@ define([
     if (!Worker) {
       ok(true, 'worker test is irrelevant');
     }
-    var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
-      handler.reject('reject');
+    var func = new Promise.promisifyWebWorker('testWorker.js', {
+      handleReceivedMessage: function(returnValue, handler) {
+        handler.reject('reject');
+      }
     });
 
     var pr = func('bar');
@@ -388,9 +386,10 @@ define([
     if (!Worker) {
       ok(true, 'worker test is irrelevant');
     }
-    var prfunc = new Promise.promisifyWebWorker('testWorker-withInit.js', function(returnValue, handler) {
-      handler.resolve(returnValue);
-    }, {
+    var prfunc = new Promise.promisifyWebWorker('testWorker-withInit.js', {
+      handleReceivedMessage: function(returnValue, handler) {
+        handler.resolve(returnValue);
+      },
       initialize: function(worker) {
         var p = new Promise();
         worker.postMessage({
