@@ -83,19 +83,11 @@ define([], function() {
     var requestQueue = [];
     var inFlightHandler;
 
-    //make the worker
-    worker.addEventListener('message', function(arg) {
-      console.log('-------WORKER MESSAGE----', arg);
-      if (!busy) {
-        console.log('Worker posting message which cannot be handled - no request in progress', arg);
-        return;
+    var onMessage = function(arg) {
+      if (busy) {
+        handleReceivedMessage(arg.data, inFlightHandler);
       }
-      handleReceivedMessage(arg.data, inFlightHandler);
-    });
-    console.log('initialize', options.initialize);
-    if (options.initialize !== undefined) {
-      worker.postMessage(options.initialize);
-    }
+    };
 
     function tryNext() {
       if (busy) {
@@ -110,7 +102,6 @@ define([], function() {
       var promise = task.p;
       inFlightHandler = {
         resolve: function(a) {
-          console.log('resolv the thing');
           promise.resolve(a);
           busy = false;
           tryNext();
@@ -124,14 +115,12 @@ define([], function() {
           promise.progress(e);
         }
       };
-      console.log('args', task.args);
       var message = mapArguments.apply(null, task.args);
       busy = true;
-      console.log('post message', message);
       worker.postMessage(message);
     }
 
-    return function() {
+    var promisableWorker = function() {
       var resultPromise = new Promise();
       requestQueue.push({
         p: resultPromise,
@@ -140,6 +129,19 @@ define([], function() {
       tryNext();
       return resultPromise;
     };
+
+    if (typeof options.initialize === 'function') {
+      var initialized = options.initialize(worker);
+      return Promise.when(initialized,
+          function() {
+            //subscribe to message here.
+            worker.addEventListener('message', onMessage);
+            return promisableWorker;
+          });
+    } else {
+      worker.addEventListener('message', onMessage);
+      return promisableWorker;
+    }
 
   };
 

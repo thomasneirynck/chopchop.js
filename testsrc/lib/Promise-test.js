@@ -317,7 +317,6 @@ define([
       ok(true, 'worker test is irrellevant');
     }
     var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
-      console.log('must handle returnValue from server');
       handler.resolve(returnValue);
     });
     equal(typeof func, 'function', 'should get a function after promisifying');
@@ -328,12 +327,11 @@ define([
     });
   });
 
-  asyncTest('promisfy worker -- queueing', function() {
+  asyncTest('promisify worker -- queueing', function() {
     if (!Worker) {
-      ok(true, 'worker test is irrellevant');
+      ok(true, 'worker test is irrelevant');
     }
     var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
-      console.log('must handle returnValue from server');
       handler.resolve(returnValue);
     });
 
@@ -359,6 +357,60 @@ define([
     func('bar 4').then(function(e) {
       ok(called1 && called2 && called3, 'should have responses for previous ones first');
       start();
+    });
+
+  });
+
+  asyncTest('promisify worker - rejection', function() {
+
+    if (!Worker) {
+      ok(true, 'worker test is irrelevant');
+    }
+    var func = new Promise.promisifyWebWorker('testWorker.js', function(returnValue, handler) {
+      handler.reject('reject');
+    });
+
+    var pr = func('bar');
+    var res = false;
+    pr.then(function(v) {
+      res = true;
+      ok(false, 'should not be resolved')
+    }, function(er) {
+      equal(er, 'reject', 'should indeed be rejected');
+      ok(!res, 'should not be resolved');
+      start();
+    });
+
+  });
+
+  asyncTest('promisify worker - with init', function() {
+
+    if (!Worker) {
+      ok(true, 'worker test is irrelevant');
+    }
+    var prfunc = new Promise.promisifyWebWorker('testWorker-withInit.js', function(returnValue, handler) {
+      handler.resolve(returnValue);
+    }, {
+      initialize: function(worker) {
+        var p = new Promise();
+        worker.postMessage({
+          init: 'bleep INIT!'
+        });
+        worker.addEventListener('message', function(b) {
+          if (b.data === 'init done') {
+            p.resolve();
+          }
+        });
+        return p;
+      }
+    });
+
+    prfunc.then(function(func) {
+      var pr = func('bar');
+      pr.then(function(v) {
+        equal(v, 'foo bar bleep INIT!', 'should have initialized');
+        start()
+      });
     });
 
   });
