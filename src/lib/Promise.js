@@ -2,7 +2,8 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(module);
 }
 
-define([], function () {
+define([], function() {
+
   "use strict";
 
   var ITEMS_PER_LISTENER = 4;
@@ -10,10 +11,14 @@ define([], function () {
   var PROGRESS_HANDLER_OFFSET = 2;
   var REJECT_HANDLER_OFFSET = 1;
   var RESOLVE_HANDLER_OFFSET = 0;
-  var NOOP = function () {
+  var NOOP = function() {
+  };
+  var IDENTITY = function(a) {
+    return a;
   };
   var seal = Object.seal || NOOP;
   var freeze = Object.freeze || NOOP;
+  var $N = {};
 
   /**
    * Create promise
@@ -36,35 +41,110 @@ define([], function () {
    * @param progressHandler
    * @return {*}
    */
-  Promise.when = function (promiseOrValue, successHandler, errorHandler, progressHandler) {
+  Promise.when = function(promiseOrValue, successHandler, errorHandler, progressHandler) {
     var p, res;
     if (typeof promiseOrValue === 'object' && typeof promiseOrValue.then === 'function') {
       return promiseOrValue.then(successHandler, errorHandler, progressHandler);
     } else {
       p = new Promise();
       res = p.then(successHandler, errorHandler);
-      setTimeout(function () {
+      setTimeout(function() {
         p.resolve(promiseOrValue);
       }, 0);
       return res;
     }
   };
 
-  Promise._whenError = function (v, errorHandler) {
+  Promise._whenError = function(v, errorHandler) {
     if (typeof v.then === 'function') {
       return v.then(NOOP, errorHandler);
     } else {
       var p = new Promise();
       var res = p.then(NOOP, errorHandler);
-      setTimeout(function () {
+      setTimeout(function() {
         p.reject(v);
       }, 0);
       return res;
     }
   };
 
+  Promise.promisifyWebWorker = function(workerFile, handleReceivedMessage, options) {
+
+    if (!Worker) {
+      throw new Error('Web Workers not supported');
+    }
+
+    options = options || $N;
+
+    var worker = new Worker(workerFile);
+    var mapArguments = options.mapArguments || IDENTITY;
+
+    var busy = false;
+    var requestQueue = [];
+    var inFlightHandler;
+
+    //make the worker
+    worker.addEventListener('message', function(arg) {
+      console.log('-------WORKER MESSAGE----', arg);
+      if (!busy) {
+        console.log('Worker posting message which cannot be handled - no request in progress', arg);
+        return;
+      }
+      handleReceivedMessage(arg.data, inFlightHandler);
+    });
+    console.log('initialize', options.initialize);
+    if (options.initialize !== undefined) {
+      worker.postMessage(options.initialize);
+    }
+
+    function tryNext() {
+      if (busy) {
+        //must wait until we can send stuff to the worker.
+        return;
+      }
+      if (requestQueue.length === 0) {
+        //queue is empty, so cannot do next.
+        return;
+      }
+      var task = requestQueue.shift();
+      var promise = task.p;
+      inFlightHandler = {
+        resolve: function(a) {
+          console.log('resolv the thing');
+          promise.resolve(a);
+          busy = false;
+          tryNext();
+        },
+        reject: function(a) {
+          promise.reject(a);
+          busy = false;
+          tryNext();
+        },
+        progress: function(e) {
+          promise.progress(e);
+        }
+      };
+      console.log('args', task.args);
+      var message = mapArguments.apply(null, task.args);
+      busy = true;
+      console.log('post message', message);
+      worker.postMessage(message);
+    }
+
+    return function() {
+      var resultPromise = new Promise();
+      requestQueue.push({
+        p: resultPromise,
+        args: arguments
+      });
+      tryNext();
+      return resultPromise;
+    };
+
+  };
+
   Promise.prototype = {
-    __propagate: function (offset, value) {
+    __propagate: function(offset, value) {
       var listeners = this._listeners;
       var i, l, listener, continuation, ret;
       for (i = 0, l = listeners.length; i < l; i += ITEMS_PER_LISTENER) {
@@ -74,12 +154,12 @@ define([], function () {
           ret = listener(value);
           if (typeof ret.then === 'function') {
             ret.then(
-              function (e) {
-                continuation.resolve(e);
-              },
-              function (e) {
-                continuation.reject(e);
-              }
+                function(e) {
+                  continuation.resolve(e);
+                },
+                function(e) {
+                  continuation.reject(e);
+                }
             );
           } else {
             continuation.resolve(ret);
@@ -97,16 +177,16 @@ define([], function () {
      *  the thenable is bound. (E.g. they cannot resolve the thenable, only listen to when it will be resolved).
      * @return {Object} thenable
      */
-    thenable: function () {
+    thenable: function() {
       var self = this;
       return {
-        then: function (onResolve, onReject, onProgress) {
+        then: function(onResolve, onReject, onProgress) {
           return self.then(onResolve, onReject, onProgress);
         }
       };
     },
 
-    then: function (onResolve, onReject, onProgress) {
+    then: function(onResolve, onReject, onProgress) {
 
       var index;
       var continuationPromise = new Promise();
@@ -129,14 +209,14 @@ define([], function () {
       return continuationPromise;
 
     },
-    __breakIfComplete: function () {
+    __breakIfComplete: function() {
       if (this._resolved) {
         throw new Error('This promise has already been resolved.');
       } else if (this._rejected) {
         throw new Error('This promise has already been rejected.');
       }
     },
-    progress: function (intermediateValue) {
+    progress: function(intermediateValue) {
       this.__breakIfComplete();
       var i, l, listener;
       for (i = PROGRESS_HANDLER_OFFSET, l = this._listeners.length; i < l; i += ITEMS_PER_LISTENER) {
@@ -144,13 +224,13 @@ define([], function () {
         listener(intermediateValue);
       }
     },
-    resolve: function (resolution) {
+    resolve: function(resolution) {
       this.__breakIfComplete();
       this._resolved = true;
       this._resolution = resolution;
       this.__propagate(RESOLVE_HANDLER_OFFSET, resolution);
     },
-    reject: function (rejection) {
+    reject: function(rejection) {
       this.__breakIfComplete();
       this._rejected = true;
       this._error = rejection;
@@ -162,6 +242,5 @@ define([], function () {
   freeze(Promise);
 
   return Promise;
-
 
 });

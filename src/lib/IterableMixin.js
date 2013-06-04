@@ -2,7 +2,7 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(module);
 }
 
-define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
+define(['./Promise', './animationFrame'], function(Promise, animationFrame) {
 
   "use strict";
 
@@ -11,11 +11,11 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
   /**
    * polyfill for getting the current date.
    */
-  var now = (function () {
+  var now = (function() {
     if (typeof Date.now === 'function') {
       return Date.now;
     } else {
-      return function () {
+      return function() {
         return new Date().getTime();
       };
     }
@@ -25,20 +25,20 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
    * handler for throwing an error
    * @param e
    */
-  var propagateError = function (e) {
+  var propagateError = function(e) {
     throw e;
   };
 
   /**
    * default ticker. breaks the callstack.
    */
-  var timeoutTicker = (function () {
+  var timeoutTicker = (function() {
     if (window.setImmediate) {
-      return function (cb) {
+      return function(cb) {
         return window.setImmediate(cb);
       };
     } else {
-      return function (cb) {
+      return function(cb) {
         return setTimeout(cb, 0);
       };
     }
@@ -49,10 +49,10 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
    * @param iterable. can be an object that implements .next or an array.
    * @returns {Function}
    */
-  var createNextFunction = function (iterable) {
+  var createNextFunction = function(iterable) {
     var curIndex, end;
     if (typeof iterable.next === 'function') {
-      return function () {
+      return function() {
         return iterable.next();
       };
     } else if (iterable instanceof Array) {
@@ -63,7 +63,7 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
       }
       curIndex = -1;
       end = iterable.length;
-      return function () {
+      return function() {
         curIndex += 1;
         if (curIndex < end) {
           return iterable[curIndex];
@@ -88,7 +88,7 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
    * @param [options.requestTick] function accepting single function parameter callback. Invoke the callback when a new tick process may be handled.
    *
    */
-  var _forEachAsync = function (callback, options) {
+  var _forEachAsync = function(callback, options) {
 
     options = options || $N;
 
@@ -108,7 +108,7 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
     var hasMoreElements = true;
     var next = createNextFunction(this);
 
-    var batchCalls = function () {
+    var batchCalls = function() {
 
       var to, nextElement;
       var n = 0;
@@ -118,10 +118,10 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
       }
 
       while (
-        (!measureTime || (now() < to)) && //still has some time left to process
+          (!measureTime || (now() < to)) && //still has some time left to process
           (n < maxn) && //still has not reached the maximum element limit
           hasMoreElements //still has elements in the iteration
-        ) {
+          ) {
 
         try {
           nextElement = next();
@@ -200,138 +200,139 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
 
   IterableMixin.prototype = {
 
-    reduceCyber: function (fold, accumulator, options) {
+//    reduceCyber: function (fold, accumulator, options) {
+//
+//      console.log('arguments', arguments);
+//      console.log(this);
+//
+//      options = options || {};
+//
+//
+//      var p = new Promise();
+//      var startNr = options.n || 20;
+//      var targetTime = options.targetTime || 20;
+//      var ticker = options.requestTick || animationFrame.requestAnimationFrame;
+//      var control = options.control || 1;
+//
+//
+//      var nr = startNr;
+//      var first = true;
+//      var stop = false;
+//      var bef = now();
+//      var self = this;
+//
+//
+//      function next() {
+//
+//
+//        first = false;
+//        var i;
+//        for (i = 0; !stop && i < nr; i += 1) {
+//          try {
+//            var el = self.next();
+//            accumulator = fold(accumulator, el);
+//          } catch (e) {
+//            stop = true;
+//          }
+//        }
+//
+//        var newbef = now();
+//        var duration = newbef - bef;
+//        console.log('tick,---------', nr, duration, targetTime);
+//        if (!first) {
+//          if (duration < targetTime) {
+//            var diff = targetTime - duration;
+//            var sf = diff / targetTime;
+//            nr += sf * nr;
+//            ;
+//          } else {
+//            var diff = duration - targetTime;
+//            var sf = diff / targetTime;
+//            nr -= sf * nr;
+//          }
+//        }
+//
+//        nr = (nr < 2) ? 2 : nr;
+//        nr = Math.round(nr);
+//        bef = newbef;
+//
+//        if (!stop) {
+//          ticker(next);
+//        } else {
+//          console.log('done', accumulator);
+//          p.resolve(accumulator);
+//        }
+//
+//      }
+//
+//      ticker(next);
+//
+//      return p;
+//    },
 
-      console.log('arguments', arguments);
-      console.log(this);
-
-      options = options || {};
-
-
-      var p = new Promise();
-      var startNr = options.n || 20;
-      var targetTime = options.targetTime || 20;
-      var ticker = options.requestTick || animationFrame.requestAnimationFrame;
-      var control = options.control || 1;
-
-
-      var nr = startNr;
-      var first = true;
-      var stop = false;
-      var bef = now();
-      var self = this;
-
-
-      function next() {
-
-
-        first = false;
-        var i;
-        for (i = 0; !stop && i < nr; i += 1) {
-          try {
-            var el = self.next();
-            accumulator = fold(accumulator, el);
-          } catch (e) {
-            stop = true;
-          }
-        }
-
-        var newbef = now();
-        var duration = newbef - bef;
-        console.log('tick,---------', nr, duration, targetTime);
-        if (!first) {
-          if (duration < targetTime) {
-            var diff = targetTime - duration;
-            var sf = diff / targetTime;
-            nr += sf * nr;
-            ;
-          } else {
-            var diff = duration - targetTime;
-            var sf = diff / targetTime;
-            nr -= sf * nr;
-          }
-        }
-
-        nr = (nr < 2) ? 2 : nr;
-        nr = Math.round(nr);
-        bef = newbef;
-
-        if (!stop) {
-          ticker(next);
-        } else {
-          console.log('done', accumulator);
-          p.resolve(accumulator);
-        }
-
-      }
-
-      ticker(next);
-
-      return p;
-    },
-
-    groupByAsync: function (generateKey, options) {
+    groupByAsync: function(generateKey, options) {
       var group = {};
 
       return _forEachAsync
-        .call(this,
-        function (item) {
-          var key = generateKey(item);
-          var items = group[key];
-          if (items === undefined) {
-            items = [];
-            group[key] = items;
-          }
-          items.push(item);
-        }, options)
-        .then(function () {
-          return group;
-        });
+          .call(this,
+          function(item) {
+            var key = generateKey(item);
+            var items = group[key];
+            if (items === undefined) {
+              items = [];
+              group[key] = items;
+            }
+            items.push(item);
+          }, options)
+          .then(function() {
+            console.log(group);
+            return group;
+          });
     },
 
-    mapAsync: function (mapFunction, options) {
+    mapAsync: function(mapFunction, options) {
       var out = [];
       return _forEachAsync.call(
-        this,
-        function (value) {
-          out.push(mapFunction(value));
-        }, options)
-        .then(function () {
-          return out;
-        }, propagateError)
-        .thenable();
+          this,
+          function(value) {
+            out.push(mapFunction(value));
+          }, options)
+          .then(function() {
+            return out;
+          }, propagateError)
+          .thenable();
     },
 
-    filterAsync: function (predicate, options) {
+    filterAsync: function(predicate, options) {
       var out = [];
       return _forEachAsync.call(
-        this,
-        function (value) {
-          if (predicate(value)) {
-            out.push(value);
-          }
-        },
-        options)
-        .then(function () {
-          return out;
-        }, propagateError)
-        .thenable();
+          this,
+          function(value) {
+            if (predicate(value)) {
+              out.push(value);
+            }
+          },
+          options)
+          .then(function() {
+            return out;
+          }, propagateError)
+          .thenable();
     },
 
-    reduceAsync: function (fold, value, options) {
+    reduceAsync: function(fold, value, options) {
 
       if (value === undefined) {
         throw new Error('Cannot reduce empty Iterable with no initial value (2nd argument)');
       }
 
       return _forEachAsync
-        .call(this, function (next) {
-          value = fold(value, next);
-        }, options)
-        .then(function () {
-          return value;
-        }, propagateError)
-        .thenable();
+          .call(this, function(next) {
+            value = fold(value, next);
+          }, options)
+          .then(function() {
+            return value;
+          }, propagateError)
+          .thenable();
     }
   };
 
@@ -340,7 +341,7 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
    * @param destination the object in which to mixin the functions.
    * @return {*}
    */
-  IterableMixin.augment = function (destination) {
+  IterableMixin.augment = function(destination) {
     var key;
     for (key in IterableMixin.prototype) {
       if (IterableMixin.prototype.hasOwnProperty(key)) {
@@ -356,8 +357,8 @@ define(['./Promise', './animationFrame'], function (Promise, animationFrame) {
   //for convenience, also provide the functionality as properties on the constructor function.
   for (var key in IterableMixin.prototype) {
     if (IterableMixin.prototype.hasOwnProperty(key)) {
-      (function (method) {
-        IterableMixin[method] = function (iterable) {
+      (function(method) {
+        IterableMixin[method] = function(iterable) {
           var args = Array.prototype.slice.call(arguments, 1);
           return IterableMixin.prototype[method].apply(iterable, args);
         };
