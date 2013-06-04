@@ -44,7 +44,7 @@ define(['lib/Promise'], function(Promise) {
       this.__doNew();
     },
     isEmpty: function() {
-      return this.__reduceQueue.length === 0;
+      return this._busy === false && this.__reduceQueue.length === 0;
     }
   };
 
