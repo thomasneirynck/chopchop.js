@@ -2,29 +2,37 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(module);
 }
 
-define([], function () {
+define([], function() {
 
   function Evented() {
-    this.__evntdCallbacks = {};
   }
 
   Evented.prototype = {
-    emit: function (eventName, event) {
-      var onHandler, i, l;
-      //notify listeners registered with 'on'
-      var listeners = this.__evntdCallbacks[eventName];
-      if (listeners) {
-        for (i = 0, l = listeners.length; i < l; i++) {
-          listeners[i](event);
+    emit: function(eventName, event) {
+
+      var onHandler, i, l,listeners;
+      if (typeof this.__evntdCallbacks === 'object') {
+        //notify listeners registered with 'on'
+        listeners = this.__evntdCallbacks[eventName];
+        if (listeners) {
+          for (i = 0, l = listeners.length; i < l; i++) {
+            listeners[i](event);
+          }
         }
       }
+
       //notify listener at this.oneventName (if any)
       onHandler = this['on' + eventName];
-      if (onHandler) {
+      if (typeof onHandler === 'function') {
         onHandler.call(this, event);
       }
     },
-    on: function (eventName, callback) {
+    on: function(eventName, callback) {
+
+      if (this.__evntdCallbacks === undefined || this.__evntdCallbacks === null) {
+        this.__evntdCallbacks = {};
+      }
+
       var listeners = this.__evntdCallbacks[eventName];
       if (!listeners) {
         listeners = [];
@@ -32,7 +40,7 @@ define([], function () {
       }
       listeners[listeners.length] = callback;
       return {
-        remove: function () {
+        remove: function() {
           var index = listeners.indexOf(callback);
           listeners.splice(index, 1);
         }
@@ -40,7 +48,7 @@ define([], function () {
     }
   };
 
-  Evented.augment = function (ob) {
+  Evented.augment = function(ob) {
     for (var i in Evented.prototype) {
       ob[i] = Evented.prototype[i];
     }

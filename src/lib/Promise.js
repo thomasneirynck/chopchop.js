@@ -30,7 +30,7 @@ define([], function() {
   function Promise() {
     this._resolved = false;
     this._rejected = false;
-    this._listeners = [];
+    this._listeners = null;//will lazily initialize.
     this._resolution = null;
     this._error = null;
     seal(this);
@@ -210,6 +210,9 @@ define([], function() {
       } else if (this._rejected) {
         return Promise._whenError(this._error, onReject);
       } else {
+        if (this._listeners === null){
+          this._listeners.length = [];
+        }
         index = this._listeners.length;
         this._listeners[index + RESOLVE_HANDLER_OFFSET] = onResolve;
         this._listeners[index + REJECT_HANDLER_OFFSET] = onReject;
