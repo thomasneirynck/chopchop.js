@@ -157,6 +157,9 @@ define([], function() {
   Promise.prototype = {
     __propagate: function(offset, value) {
       var listeners = this._listeners;
+      if (listeners === null){
+        return;
+      }
       var i, l, listener, continuation, ret;
       for (i = 0, l = listeners.length; i < l; i += ITEMS_PER_LISTENER) {
         listener = listeners[i + offset];
@@ -211,7 +214,7 @@ define([], function() {
         return Promise._whenError(this._error, onReject);
       } else {
         if (this._listeners === null){
-          this._listeners.length = [];
+          this._listeners = [];
         }
         index = this._listeners.length;
         this._listeners[index + RESOLVE_HANDLER_OFFSET] = onResolve;
