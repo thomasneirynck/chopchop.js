@@ -216,7 +216,7 @@
                 b.innerHTML = this.name + " <b class='counts'>(<b class='failed'>" + bad + "</b>, <b class='passed'>" + good + "</b>, " + this.assertions.length + ")</b>";
 
                 addEvent(b, "click", function() {
-                    var next = b.nextSibling.nextSibling,
+                    var next = b._nextSibling._nextSibling,
                         display = next.style.display;
                     next.style.display = display === "none" ? "block" : "none";
                 });

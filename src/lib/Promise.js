@@ -30,7 +30,7 @@ define([], function() {
   function Promise() {
     this._resolved = false;
     this._rejected = false;
-    this._listeners = [];
+    this._listeners = null;//will lazily initialize.
     this._resolution = null;
     this._error = null;
     seal(this);
@@ -45,16 +45,14 @@ define([], function() {
    * @return {*}
    */
   Promise.when = function(promiseOrValue, successHandler, errorHandler, progressHandler) {
-    var p, res;
+    var p, continuationPromise;
     if (typeof promiseOrValue === 'object' && typeof promiseOrValue.then === 'function') {
       return promiseOrValue.then(successHandler, errorHandler, progressHandler);
     } else {
       p = new Promise();
-      res = p.then(successHandler, errorHandler);
-      setTimeout(function() {
-        p.resolve(promiseOrValue);
-      }, 0);
-      return res;
+      continuationPromise = p.then(successHandler, errorHandler);
+      p.resolve(promiseOrValue);
+      return continuationPromise;
     }
   };
 
@@ -146,7 +144,7 @@ define([], function() {
             //subscribe to onMessage when done, and then return the new function.
             worker.addEventListener('message', onMessage);
             return promisableWorker;
-          });
+          },undefined,undefined);
     } else {
       worker.addEventListener('message', onMessage);
       return promisableWorker;
@@ -157,6 +155,9 @@ define([], function() {
   Promise.prototype = {
     __propagate: function(offset, value) {
       var listeners = this._listeners;
+      if (listeners === null){
+        return;
+      }
       var i, l, listener, continuation, ret;
       for (i = 0, l = listeners.length; i < l; i += ITEMS_PER_LISTENER) {
         listener = listeners[i + offset];
@@ -206,10 +207,13 @@ define([], function() {
       onProgress = onProgress || NOOP;
 
       if (this._resolved) {
-        return Promise.when(this._resolution, onResolve, onReject);
+        return Promise.when(this._resolution, onResolve, onReject,undefined);
       } else if (this._rejected) {
         return Promise._whenError(this._error, onReject);
       } else {
+        if (this._listeners === null){
+          this._listeners = [];
+        }
         index = this._listeners.length;
         this._listeners[index + RESOLVE_HANDLER_OFFSET] = onResolve;
         this._listeners[index + REJECT_HANDLER_OFFSET] = onReject;

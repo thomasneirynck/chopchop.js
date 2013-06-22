@@ -169,7 +169,6 @@ define([
         return 'b';
       }
     }, 0).then(function(e) {
-          console.log(e);
           ok(e.a instanceof Array, 'should get array for a');
           ok(e.b instanceof Array, 'should get array for b');
           equal(e.a.length, 2, 'should get 2 elems fro group a');

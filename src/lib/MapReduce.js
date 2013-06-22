@@ -26,21 +26,23 @@ define(['lib/Promise'], function(Promise) {
         return;
       }
 
-      var kv = this.__reduceQueue.pop();
-      var k, v, accum;
-      if (!kv) {
+      var v = this.__reduceQueue.pop();
+      var k = this.__reduceQueue.pop();
+      if (!k || !v) {
         return;
       }
-      k = kv[0];
-      v = kv[1];
-      accum = this.__getAccumulator(k);
+
+      var accum = this.__getAccumulator(k);
       this._currentKey = k;
 
       this._busy = true;
-      Promise.when(this._reduce(accum, v), this.__onReduceComplete);
+      var reduction = this._reduce(accum, v);
+      Promise.when(reduction, this.__onReduceComplete, undefined, undefined);
+
     },
     pushKeyValue: function(key, value) {
-      this.__reduceQueue.push([key, value]);
+      this.__reduceQueue.push(key);
+      this.__reduceQueue.push(value);
       this.__doNew();
     },
     isEmpty: function() {
@@ -85,15 +87,14 @@ define(['lib/Promise'], function(Promise) {
       self._inputQueue.push(input);
       self._process();
       self.__nextInput();
-      return;
     };
 
-    this.__onInputError = function(er) {
+    this.__onInputError = function() {
+      //reached the end.
       self._noMoreInputs = true;
       self._process();
     };
 
-    this._activated = false;
   }
 
   MapReduce.prototype = {
@@ -112,12 +113,13 @@ define(['lib/Promise'], function(Promise) {
         this._done = true;
         this._doneNotif(this._resultMap);
         return;
-      } else {
-        //perform map tasks.
-        if (this._inputQueue.length > 0) {
-          this.__doMap();
-        }
       }
+
+      //perform map tasks.
+      if (this._inputQueue.length > 0) {
+        this.__doMap();
+      }
+
     },
 
     __doMap: function() {
@@ -147,7 +149,7 @@ define(['lib/Promise'], function(Promise) {
         self._process();
       };
 
-      Promise.when(mapperNode(input), doneMapping);
+      Promise.when(mapperNode(input), doneMapping, undefined, undefined);
     },
 
     run: function() {
@@ -161,9 +163,9 @@ define(['lib/Promise'], function(Promise) {
       var next;
       try {
         next = this._inputIterator.next();
-        Promise.when(next, this.__onInputSuccess, this.__onInputError);
+        Promise.when(next, this.__onInputSuccess, this.__onInputError, undefined);
       } catch (e) {
-        this.__onInputError(e);
+        this.__onInputError();
       }
     }
   };
@@ -173,12 +175,12 @@ define(['lib/Promise'], function(Promise) {
    */
   return function(options) {
     var p = new Promise();
-    setTimeout(function() {
-      var mr = new MapReduce(function(e) {
-        p.resolve(e);
-      }, options);
-      mr.run();
-    }, 0);
+//    setTimeout(function() {
+    var mr = new MapReduce(function(e) {
+      p.resolve(e);
+    }, options);
+    mr.run();
+//    }, 0);
     return p.thenable();
   };
 
